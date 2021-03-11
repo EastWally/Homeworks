@@ -137,81 +137,80 @@ namespace Task2
             return null;
         }
 
-
         public void PrintTree()
         {
-            //Словарь значений узлов. Key - глубина, Value - значения узлов на этом уровне
-            Dictionary<int, string> outputList = new Dictionary<int, string>();
-            //Словарь дуг. Key - глубина, Value - дуги между узлами
-            Dictionary<int, string> rowList = new Dictionary<int, string>();
-            //Смещение вывода корневого узла
-            int position = 60;
-            int depth = 0;
-            //Рекурсивный обход дерева и заполнение словарей
-            PreOrderTravers(root, depth, position, ref outputList, ref rowList);
-            //Вывод           
-            foreach (var kv in outputList)
+            if (root == null) return;
+            int spacing = 1;
+            int topMargin = 2;
+            int leftMargin = 2;
+            int rootTop = Console.CursorTop + topMargin;
+            var last = new List<NodeInfo>();
+            var next = root;
+            for (int level = 0; next != null; level++)
             {
-                Console.WriteLine(kv.Value);
-                Console.WriteLine(rowList[kv.Key]);
+                var item = new NodeInfo { Node = next, Text = next.Value.ToString() };
+                if (level < last.Count)
+                {
+                    item.StartPos = last[level].EndPos + spacing;
+                    last[level] = item;
+                }
+                else
+                {
+                    item.StartPos = leftMargin;
+                    last.Add(item);
+                }
+                if (level > 0)
+                {
+                    item.Parent = last[level - 1];
+                    if (next == item.Parent.Node.LeftChild)
+                    {
+                        item.Parent.Left = item;
+                        item.EndPos = Math.Max(item.EndPos, item.Parent.StartPos - 1);
+                    }
+                    else
+                    {
+                        item.Parent.Right = item;
+                        item.StartPos = Math.Max(item.StartPos, item.Parent.EndPos + 1);
+                    }
+                }
+                next = next.LeftChild ?? next.RightChild;
+                for (; next == null; item = item.Parent)
+                {
+                    int top = rootTop + 2 * level;
+                    Print(item.Text, top, item.StartPos);
+                    if (item.Left != null)
+                    {
+                        Print("/", top + 1, item.Left.EndPos);
+                        Print("_", top, item.Left.EndPos + 1, item.StartPos);
+                    }
+                    if (item.Right != null)
+                    {
+                        Print("_", top, item.EndPos, item.Right.StartPos - 1);
+                        Print("\\", top + 1, item.Right.StartPos - 1);
+                    }
+                    if (--level < 0) break;
+                    if (item == item.Parent.Left)
+                    {
+                        item.Parent.StartPos = item.EndPos + 1;
+                        next = item.Parent.Node.RightChild;
+                    }
+                    else
+                    {
+                        if (item.Parent.Left == null)
+                            item.Parent.EndPos = item.StartPos - 1;
+                        else
+                            item.Parent.StartPos += (item.StartPos - 1 - item.Parent.EndPos) / 2;
+                    }
+                }
             }
+            Console.SetCursorPosition(0, rootTop + 2 * last.Count - 1);
         }
 
-        /// <summary>
-        /// Рекурсивный обход дерева и заполнение словарей
-        /// </summary>
-        /// <param name="root">Стартовый узел</param>
-        /// <param name="depth">Текущая глубина</param>
-        /// <param name="position">Смещение вывода строки</param>
-        /// <param name="outputList">Словарь значений узлов</param>
-        /// <param name="rowList">Словарь дуг</param>
-        public void PreOrderTravers(TreeNode root, int depth, int position, ref Dictionary<int, string> outputList, ref Dictionary<int, string> rowList)
+        private void Print(string s, int top, int left, int right = -1)
         {
-            //Отступ между узлами на одном уровне
-            int indent = 5;
-            if (root != null)
-            {
-                //Если словарь дуг не содержит запись текущего уровня, добавить строку, заполненную пробелами до указанной позиции
-                if (!rowList.ContainsKey(depth))
-                    rowList.Add(depth, $"{("").PadRight(position, ' ')}");
-                //Если узел имеет левого/правого потомка, добавить симоволы / \ и отступы к строке текущей глубины
-                //Иначе добавить пробел и отступы к строке текущей глубины
-                if (root.LeftChild != null)
-                    rowList[depth] += $"{("/").PadRight(indent, ' ')}";
-                else
-                    rowList[depth] += $"{(" ").PadRight(indent, ' ')}";
-                if (root.RightChild != null)
-                    rowList[depth] += $"{("\\").PadRight(indent, ' ')}";
-                else
-                    rowList[depth] += $"{(" ").PadRight(indent, ' ')}";
-
-                //Если словарь значений узлов не содержит запись текущего уровня, добавить строку, заполненную пробелами до указанной позиции
-                if (!outputList.ContainsKey(depth))
-                    outputList.Add(depth, $"{("").PadRight(position + 2, ' ')}");
-                //Добавить значение узла к строке текущего уровня словаря значений узлов
-                outputList[depth] += $"{(root.Value.ToString()).PadRight(indent + 1, ' ')}";
-
-                //Увеличить глубину
-                depth++;
-                //Уменьшить левый сдвиг строк
-                position -= 4;
-
-                //Вызвать метод для левого и правого потомков
-                PreOrderTravers(root.LeftChild, depth, position, ref outputList, ref rowList);
-                PreOrderTravers(root.RightChild, depth, position, ref outputList, ref rowList);
-            }
-            //Если стартовый узел пуст, добавить проблемы в словари дуг и значений узлов
-            else
-            {
-                if (!rowList.ContainsKey(depth))
-                    rowList.Add(depth, $"{("").PadRight(position, ' ')}");
-                
-
-                if (!outputList.ContainsKey(depth))
-                    outputList.Add(depth, $"{("").PadRight(position + 2, ' ')}");
-                outputList[depth] += $"{(" ").PadRight(indent, ' ')}";
-            }
+            Console.SetCursorPosition(left, top);
+            if (right < 0) right = left + s.Length;
+            while (Console.CursorLeft < right) Console.Write(s);
         }
-        
     }
 }
