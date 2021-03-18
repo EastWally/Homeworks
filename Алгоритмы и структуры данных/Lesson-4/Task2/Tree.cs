@@ -137,7 +137,6 @@ namespace Task2
             return null;
         }
 
-
         public void PrintTree()
         {
             if (root == null) return;
@@ -212,6 +211,7 @@ namespace Task2
             Console.SetCursorPosition(left, top);
             if (right < 0) right = left + s.Length;
             while (Console.CursorLeft < right) Console.Write(s);
-        }        
+        }
+
     }
 }

@@ -14,10 +14,7 @@ namespace Task2
             tree.AddItem(3);
             tree.AddItem(4);
             tree.AddItem(2);
-            tree.AddItem(9);
-            tree.AddItem(11);
-            tree.AddItem(1);
-            tree.AddItem(7);
+
             tree.PrintTree();
 
             Console.ReadKey();
