@@ -212,5 +212,6 @@ namespace Task2
             if (right < 0) right = left + s.Length;
             while (Console.CursorLeft < right) Console.Write(s);
         }
+
     }
 }

@@ -8,6 +8,7 @@ namespace Task2
     {
         public int Depth { get; set; }
         public TreeNode Node { get; set; }
+
         public string Text { get; set; }
         public int StartPos { get; set; }
         public int Size { get { return Text.Length; } }
